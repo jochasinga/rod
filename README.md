@@ -14,6 +14,12 @@ run `cargo test` to run test, and `cargo check` to see logs and stuff.
 - `main.rs` will be the CLI app, possibly with commands that run a default relay node.
 - `lib.rs` is the entry point for the library, re-exporting every modules in `gun`.
 
+## Develop
+```
+cargo install cargo-watch
+cargo watch -x 'run -- serve'
+```
+
 ## memo
 
 - 06/23/2021: First pair-programming with @amark. Try to flesh out the general ins and outs as well as learn Rust. Cut errors down to a few. I fixed the code for it to run and add comments.
