@@ -15,6 +15,8 @@ run `cargo test` to run test, and `cargo check` to see logs and stuff.
 - `lib.rs` is the entry point for the library, re-exporting every modules in `gun`.
 
 ## Develop
+[Rust](https://doc.rust-lang.org/book/ch01-01-installation.html) is required.
+
 ```
 cargo install cargo-watch
 cargo watch -x 'run -- serve'
