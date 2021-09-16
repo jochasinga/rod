@@ -47,7 +47,7 @@ pub async fn serve() {
 
     let port: u16 = match env::var("PORT") {
         Ok(p) => p.parse::<u16>().unwrap(),
-        _ => 8765
+        _ => 5000
     };
 
     eprintln!("Starting server at http://localhost:{}", port);
