@@ -20,6 +20,12 @@ cargo install cargo-watch
 cargo watch -x 'run -- serve'
 ```
 
+## Run on Heroku
+```
+heroku create --buildpack emk/rust
+git push heroku master
+```
+
 ## memo
 
 - 06/23/2021: First pair-programming with @amark. Try to flesh out the general ins and outs as well as learn Rust. Cut errors down to a few. I fixed the code for it to run and add comments.

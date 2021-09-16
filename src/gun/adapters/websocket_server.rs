@@ -4,6 +4,7 @@ use std::sync::{
     atomic::{AtomicUsize, Ordering},
     Arc,
 };
+use std::env;
 
 use futures::{SinkExt, StreamExt, TryFutureExt};
 use tokio::sync::{mpsc, RwLock};
@@ -40,15 +41,17 @@ pub async fn serve() {
             ws.on_upgrade(move |socket| user_connected(socket, users))
         });
 
-    // GET / -> index html
-    let index = warp::path::end().map(|| warp::reply::html(INDEX_HTML));
-
     let iris = warp::fs::dir("assets/iris");
 
     let routes = iris.or(chat);
 
-    println!("Starting server at http://localhost:3030");
-    warp::serve(routes).run(([127, 0, 0, 1], 3030)).await;
+    let port: u16 = match env::var("PORT") {
+        Ok(p) => p.parse::<u16>().unwrap(),
+        _ => 8765
+    };
+
+    eprintln!("Starting server at http://localhost:{}", port);
+    warp::serve(routes).run(([0, 0, 0, 0], port)).await;
 }
 
 async fn user_connected(ws: WebSocket, users: Users) {
@@ -101,19 +104,10 @@ async fn user_connected(ws: WebSocket, users: Users) {
 }
 
 async fn user_message(my_id: usize, msg: Message, users: &Users) {
-    // Skip any non-Text messages...
-    let msg = if let Ok(s) = msg.to_str() {
-        s
-    } else {
-        return;
-    };
-
-    let new_msg = format!("<User#{}>: {}", my_id, msg);
-
     // New message from this user, send it to everyone else (except same uid)...
     for (&uid, tx) in users.read().await.iter() {
         if my_id != uid {
-            if let Err(_disconnected) = tx.send(Message::text(new_msg.clone())) {
+            if let Err(_disconnected) = tx.send(msg.clone()) {
                 // The tx is disconnected, our `user_disconnected` code
                 // should be happening in another task, nothing more to
                 // do here.
@@ -128,45 +122,3 @@ async fn user_disconnected(my_id: usize, users: &Users) {
     // Stream closed up, so remove from the user list
     users.write().await.remove(&my_id);
 }
-
-static INDEX_HTML: &str = r#"<!DOCTYPE html>
-<html lang="en">
-    <head>
-        <title>Warp Chat</title>
-    </head>
-    <body>
-        <h1>Warp chat</h1>
-        <div id="chat">
-            <p><em>Connecting...</em></p>
-        </div>
-        <input type="text" id="text" />
-        <button type="button" id="send">Send</button>
-        <script type="text/javascript">
-        const chat = document.getElementById('chat');
-        const text = document.getElementById('text');
-        const uri = 'ws://' + location.host + '/gun';
-        const ws = new WebSocket(uri);
-        function message(data) {
-            const line = document.createElement('p');
-            line.innerText = data;
-            chat.appendChild(line);
-        }
-        ws.onopen = function() {
-            chat.innerHTML = '<p><em>Connected!</em></p>';
-        };
-        ws.onmessage = function(msg) {
-            message(msg.data);
-        };
-        ws.onclose = function() {
-            chat.getElementsByTagName('em')[0].innerText = 'Disconnected!';
-        };
-        send.onclick = function() {
-            const msg = text.value;
-            ws.send(msg);
-            text.value = '';
-            message('<You>: ' + msg);
-        };
-        </script>
-    </body>
-</html>
-"#;
