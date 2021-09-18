@@ -6,7 +6,7 @@ use crate::obj::{Object, Value};
 use crate::gun::gun::Gun;
 use crate::message::{Message, Key};
 
-
+// Daisy-chain Ad-hoc Mesh-networking
 struct Dam;
 impl Dam {
     fn hear(msg: Object, _peer: &mut Object, gun: &Gun) -> Result<(), String> {

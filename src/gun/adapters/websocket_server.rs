@@ -1,5 +1,5 @@
 // #![deny(warnings)]
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 use std::sync::{
     atomic::{AtomicUsize, Ordering},
     Arc,
@@ -12,14 +12,26 @@ use tokio_stream::wrappers::UnboundedReceiverStream;
 use warp::ws::{Message, WebSocket};
 use warp::Filter;
 
+use serde_json::Value;
+
 /// Our global unique user id counter.
 static NEXT_USER_ID: AtomicUsize = AtomicUsize::new(1);
+
+struct User {
+    sender: mpsc::UnboundedSender<Message>,
+    subscriptions: HashSet<String>
+}
+impl User {
+    fn new(sender: mpsc::UnboundedSender<Message>) -> User {
+        User { sender, subscriptions: HashSet::new() }
+    }
+}
 
 /// Our state of currently connected users.
 ///
 /// - Key is their id
 /// - Value is a sender of `warp::ws::Message`
-type Users = Arc<RwLock<HashMap<usize, mpsc::UnboundedSender<Message>>>>;
+type Users = Arc<RwLock<HashMap<usize, User>>>;
 
 #[tokio::main]
 pub async fn serve() {
@@ -31,7 +43,7 @@ pub async fn serve() {
     // Turn our "state" into a new Filter...
     let users = warp::any().map(move || users.clone());
 
-    // GET /chat -> websocket upgrade
+    // GET /gun -> websocket upgrade
     let chat = warp::path("gun")
         // The `ws()` filter will prepare Websocket handshake...
         .and(warp::ws())
@@ -80,7 +92,8 @@ async fn user_connected(ws: WebSocket, users: Users) {
     });
 
     // Save the sender in our list of connected users.
-    users.write().await.insert(my_id, tx);
+    let user = User::new(tx);
+    users.write().await.insert(my_id, user);
 
     // Return a `Future` that is basically a state machine managing
     // this specific user's connection.
@@ -104,10 +117,71 @@ async fn user_connected(ws: WebSocket, users: Users) {
 }
 
 async fn user_message(my_id: usize, msg: Message, users: &Users) {
-    // New message from this user, send it to everyone else (except same uid)...
-    for (&uid, tx) in users.read().await.iter() {
+    let msg_str = if let Ok(s) = msg.to_str() {
+        s
+    } else {
+        return;
+    };
+
+    let json: Value = match serde_json::from_str(msg_str) {
+        Ok(json) => json,
+        Err(_) => { return; }
+    };
+
+    if json.is_array() {
+        for sth in json.as_array().iter() {
+            for obj in sth.iter() {
+                user_message_item(my_id, users, obj, msg_str).await;
+            }
+        }
+    } else {
+        user_message_item(my_id, users, &json, msg_str).await;
+    }
+}
+
+async fn user_message_item(my_id: usize, users: &Users, json: &Value, msg_str: &str) {
+    // eprintln!("user {} sent request with id {}, get {} and put {}", my_id, json["#"], json["get"], json["put"]);
+    if json["#"] == Value::Null || (json["get"] == Value::Null && json["put"] == Value::Null) {
+        // eprintln!("user {} sent funny request {}", my_id, msg_str);
+        return;
+    }
+
+    if json["get"] != Value::Null {
+        match users.write().await.get_mut(&my_id) {
+            Some(user) => {
+                match json["get"]["#"].as_str() {
+                    Some(path) => { user.subscriptions.insert(path.to_string()); },
+                    _ => {}
+                }
+            },
+            _ => { return; }
+        }
+    }
+
+    // New message from this user, relay it to everyone else (except same uid)...
+    for (&uid, user) in users.read().await.iter() {
         if my_id != uid {
-            if let Err(_disconnected) = tx.send(msg.clone()) {
+            match &json["put"] {
+                Value::Object(put) => {
+                    let mut has = false;
+                    for (put_path, _v) in put.into_iter() {
+                        for s in user.subscriptions.iter() {
+                            if s.find(put_path) == Some(0) || put_path.find(s) == Some(0) {
+                                has = true;
+                                break;
+                            }
+                        }
+                        if has {
+                            break;
+                        }
+                    }
+                    if !has {
+                        continue;
+                    }
+                },
+                _ => {}
+            }
+            if let Err(_disconnected) = user.sender.send(Message::text(json.to_string())) {
                 // The tx is disconnected, our `user_disconnected` code
                 // should be happening in another task, nothing more to
                 // do here.
