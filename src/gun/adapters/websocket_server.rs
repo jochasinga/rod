@@ -182,7 +182,7 @@ async fn user_message_item(my_id: usize, users: &Users, json: &Value, msg_str: &
                 },
                 _ => {}
             }
-            user.sender.send(Message::text(json.to_string()));
+            user.sender.send(Message::text(json.to_string())).await;
         }
     }
 }
