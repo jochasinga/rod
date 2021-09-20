@@ -8,7 +8,7 @@ use std::env;
 
 use futures::{SinkExt, StreamExt, TryFutureExt};
 use tokio::sync::{mpsc, RwLock};
-use tokio_stream::wrappers::UnboundedReceiverStream;
+use tokio_stream::wrappers::ReceiverStream;
 use warp::ws::{Message, WebSocket};
 use warp::Filter;
 
@@ -18,11 +18,11 @@ use serde_json::Value;
 static NEXT_USER_ID: AtomicUsize = AtomicUsize::new(1);
 
 struct User {
-    sender: mpsc::UnboundedSender<Message>,
+    sender: mpsc::Sender<Message>,
     subscriptions: HashSet<String>
 }
 impl User {
-    fn new(sender: mpsc::UnboundedSender<Message>) -> User {
+    fn new(sender: mpsc::Sender<Message>) -> User {
         User { sender, subscriptions: HashSet::new() }
     }
 }
@@ -75,10 +75,10 @@ async fn user_connected(ws: WebSocket, users: Users) {
     // Split the socket into a sender and receive of messages.
     let (mut user_ws_tx, mut user_ws_rx) = ws.split();
 
-    // Use an unbounded channel to handle buffering and flushing of messages
+    // Use a channel to handle buffering and flushing of messages
     // to the websocket...
-    let (tx, rx) = mpsc::unbounded_channel();
-    let mut rx = UnboundedReceiverStream::new(rx);
+    let (tx, rx) = mpsc::channel(5000000);
+    let mut rx = ReceiverStream::new(rx);
 
     tokio::task::spawn(async move {
         while let Some(message) = rx.next().await {
@@ -86,7 +86,7 @@ async fn user_connected(ws: WebSocket, users: Users) {
                 .send(message)
                 .unwrap_or_else(|e| {
                     eprintln!("websocket send error: {}", e);
-                    rx.close();
+                    rx.close(); // TODO: user_disconnect
                 })
                 .await;
         }
@@ -182,11 +182,7 @@ async fn user_message_item(my_id: usize, users: &Users, json: &Value, msg_str: &
                 },
                 _ => {}
             }
-            if let Err(_disconnected) = user.sender.send(Message::text(json.to_string())) {
-                // The tx is disconnected, our `user_disconnected` code
-                // should be happening in another task, nothing more to
-                // do here.
-            }
+            user.sender.send(Message::text(json.to_string()));
         }
     }
 }
