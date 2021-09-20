@@ -166,7 +166,7 @@ async fn user_message_item(my_id: usize, users: &Users, json: &Value, msg_str: &
                     let mut has = false;
                     for (put_path, _v) in put.into_iter() {
                         for s in user.subscriptions.iter() {
-                            if s.find(put_path) == Some(0) || put_path.find(s) == Some(0) {
+                            if s.find(put_path) != None || put_path.find(s) != None {
                                 has = true;
                                 break;
                             }
