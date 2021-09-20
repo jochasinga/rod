@@ -86,6 +86,7 @@ async fn user_connected(ws: WebSocket, users: Users) {
                 .send(message)
                 .unwrap_or_else(|e| {
                     eprintln!("websocket send error: {}", e);
+                    rx.close();
                 })
                 .await;
         }
