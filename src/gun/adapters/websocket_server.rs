@@ -77,18 +77,22 @@ async fn user_connected(ws: WebSocket, users: Users) {
 
     // Use a channel to handle buffering and flushing of messages
     // to the websocket...
-    let (tx, rx) = mpsc::channel(5000000);
+    let (tx, rx) = mpsc::channel(1000000);
     let mut rx = ReceiverStream::new(rx);
 
     tokio::task::spawn(async move {
         while let Some(message) = rx.next().await {
+            let mut errored = false;
             user_ws_tx
                 .send(message)
                 .unwrap_or_else(|e| {
                     eprintln!("websocket send error: {}", e);
-                    rx.close(); // TODO: user_disconnect
+                    errored = true;
                 })
                 .await;
+            if errored {
+                let _ = user_ws_tx.close().await;
+            }
         }
     });
 
@@ -182,7 +186,7 @@ async fn user_message_item(my_id: usize, users: &Users, json: &Value, msg_str: &
                 },
                 _ => {}
             }
-            user.sender.send(Message::text(json.to_string())).await;
+            let _ = user.sender.send(Message::text(json.to_string()));
         }
     }
 }
