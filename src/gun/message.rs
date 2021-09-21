@@ -1,5 +1,6 @@
-use crate::dup::Value;
 use std::str::FromStr;
+use crate::obj::Value;
+
 
 /// Key represents constraint in the Message's keys.
 /// This makes it safe to use Message's method.
@@ -10,17 +11,6 @@ pub enum Key {
     Peers,
     Via,
 }
-
-// impl Key {
-//     fn as_str(&self) -> &str {
-//         match self {
-//             Self::MessageId => "#",
-//             Self::ContentHash => "##",
-//             Self::AckId => "@",
-//             Self::Peers => "><",
-//         }
-//     }
-// }
 
 impl ToString for Key {
     fn to_string(&self) -> String {
@@ -48,7 +38,7 @@ impl FromStr for Key {
     }
 }
 
-pub trait Message {
+pub(crate) trait Message {
     fn insert(&mut self, key: Key, val: Value) -> Result<(), &str>;
     fn get(&self, key: Key) -> Option<Value>;
 }
