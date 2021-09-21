@@ -8,7 +8,7 @@ use std::env;
 
 use futures::{SinkExt, StreamExt, TryFutureExt};
 use tokio::sync::{mpsc, RwLock};
-use tokio_stream::wrappers::ReceiverStream;
+use tokio_stream::wrappers::UnboundedReceiverStream;
 use warp::ws::{Message, WebSocket};
 use warp::Filter;
 
@@ -18,11 +18,11 @@ use serde_json::Value;
 static NEXT_USER_ID: AtomicUsize = AtomicUsize::new(1);
 
 struct User {
-    sender: mpsc::Sender<Message>,
+    sender: mpsc::UnboundedSender<Message>,
     subscriptions: HashSet<String>
 }
 impl User {
-    fn new(sender: mpsc::Sender<Message>) -> User {
+    fn new(sender: mpsc::UnboundedSender<Message>) -> User {
         User { sender, subscriptions: HashSet::new() }
     }
 }
@@ -77,8 +77,8 @@ async fn user_connected(ws: WebSocket, users: Users) {
 
     // Use a channel to handle buffering and flushing of messages
     // to the websocket...
-    let (tx, rx) = mpsc::channel(1000000);
-    let mut rx = ReceiverStream::new(rx);
+    let (tx, rx) = mpsc::unbounded_channel();
+    let mut rx = UnboundedReceiverStream::new(rx);
 
     tokio::task::spawn(async move {
         while let Some(message) = rx.next().await {
