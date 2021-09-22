@@ -92,6 +92,9 @@ async fn user_connected(ws: WebSocket, users: Users) {
                 .await;
             if errored {
                 let _ = user_ws_tx.close().await;
+                // TODO: in production, the app runs out of memory quickly.
+                // Maybe due to users disconnecting but unbounded tx channel still being written to?
+                // how to user_disconnect here?
             }
         }
     });
