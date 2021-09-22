@@ -1,18 +1,15 @@
-<h1>
-    <img src="./assets/lightning-rod.png" width="40px"/>
-    rod
-</h1>
+# 💎 Rodium
 
-Experimental implementation of [GUN](https://github.com/amark/gun).
+Fresh implementation of [GUN Protocol](https://gun.eco/docs/javascript#graphs) Protocol based on graph theory.
 
-This is very early and serve as a collaborative note/sketch between myself and @amark.
+> ⚠️ This is an experimental project. It does not have any official affilation with [GunDB](https://github.com/amark/gun). I want this to be an implementation of Gun as a protocol while being open enough to address its own [challenges](#challenges).    
+If you're looking for the official Rust project, check out [Rod (Recursive Object Database)](https://github.com/eraeco/rod), which was started by [Mark](https://github.com/amark) after our discussions and will be focusing on JS developers' ergonomics. I intend to contribute to Rod too.
 
-run `cargo test` to run test, and `cargo check` to see logs and stuff.
+## challenges
 
-## Overall structure
+Because each language brings along its own way of thinking and weaknesses, I want to focus on the parts that make use of Rust's full power (at the risk/in the hope that they are also what makes you love Rust). This might mean improving things which we can learn from Gun.js, its core JavaScript implementation or even deviate from it as new challenges arise. Therefore, these are parts of the framework I'd like to focus on:
 
-- `main.rs` will be the CLI app, possibly with commands that run a default relay node.
-- `lib.rs` is the entry point for the library, re-exporting every modules in `gun`.
+### Definitions and Proofs
 
 ## Develop
 [Rust](https://doc.rust-lang.org/book/ch01-01-installation.html) is required.
@@ -33,11 +30,23 @@ or:
 [![Deploy](assets/herokubutton.svg)](https://heroku.com/deploy?template=https://github.com/mmalmi/rod)
 
 ## memo
+Any useful facts in nature are independent of what people think and do. For example, two graphs are isomorphic since the beginning of time, not because someone discovered it.This idea is manifested in the [Mathematician's Apology](https://en.wikipedia.org/wiki/A_Mathematician%27s_Apology).
 
-- 06/23/2021: First pair-programming with @amark. Try to flesh out the general ins and outs as well as learn Rust. Cut errors down to a few. I fixed the code for it to run and add comments.
+I believe implementations are easy and adaptable as long as there are sufficient discussions around the truth rather than the implementation ("I think library A is great for this, but B is also worth checking" kind of discussion which almost always lead to bikeshedding and end up not being productive). Therefore, I want to focus on pure mathematical definitions *when possible*. This can mean starting with a [trait that describe the desired behaviors and using heavy comments to document reasoning](./src/graph.rs).
 
-- 06/27/2021: Add some code from @amark and refactor into dup module.
+Hopefully, this will lead to the kind of clarity that open doors to any developers to work on needed implementations. I want this project to start with this perspective in mind.
 
-- 06/28/2021: Add dam, dup, gun, and message module that implements Message trait.
+### Rust-first
 
 - 08/13/2021: Discuss basic structure of the project. Also downgrade the abstraction, avoiding uses of lifetime specifiers and traits where possible for maintainability and accessibility to non-rust users. Name change to rod.
+If a challenge arises that is torn between strictly implementing GUN and doing it right in Rust, we should favor the latter.
+
+### TDD
+
+I want to encourage TDD approach on the implemention side when possible. If we can't figure out how to express something as a test, which in a way reflect how user would use it, then it might be worth discussing if it is needed.
+
+## Where to start
+
+Check out [`graph.rs`](./src/graph.rs) to start with the definition of a graph, edge, and vertex. It might be helpful to check out [GUN's graph documentation](https://gun.eco/docs/javascript#graphs).
+
+> ⚠️ At this point, most of the work will be in the form of discussions and proofs.
