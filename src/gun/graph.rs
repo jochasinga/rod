@@ -1,14 +1,13 @@
+use std::collections::hash_set::Iter;
 /// Definition:
 /// A graph is an object consisting of two sets, a VertexSet<T> and an EdgeSet<T>.
 /// The edge set may be empty, but otherwise its elements are two-element
 /// subsets of the vertex set.
-
 use std::collections::HashSet;
 use std::hash::Hash;
-use generational_arena::Arena;
 
 pub type VertexSet<T> = Set<Vertex<T>>;
-pub type EdgeSet<T> = Arena<Edge<T>>;
+pub type EdgeSet<T> = Set<Edge<T>>;
 
 struct Graph<T> {
     vertices: VertexSet<T>,
@@ -20,14 +19,14 @@ struct GraphBuilder<T> {
     edges: EdgeSet<T>,
 }
 
-impl<T> GraphBuilder<T> 
-where 
+impl<T> GraphBuilder<T>
+where
     T: Eq + Hash + Clone,
 {
     pub fn new() -> Self {
         GraphBuilder {
             vertices: Set::new(),
-            edges: Arena::new(),
+            edges: Set::new(),
         }
     }
 
@@ -59,34 +58,53 @@ where
     fn new() -> Self {
         Graph {
             vertices: Set::new(),
-            edges: Arena::new(),
+            edges: Set::new(),
+        }
+    }
+
+    fn get(&self, v: T) -> Option<Vertex<T>> {
+        let vs: VertexSet<T> = self.vertices.clone().into();
+        let Set(inner) = vs;
+        match inner.get(&Vertex(v)) {
+            Some(vt) => Some((*vt).clone()),
+            _ => None,
         }
     }
 }
 
 // A vertex A is a finite non-empty set
 // {A, B, C, D}
-#[derive(PartialEq, Eq, Hash, Clone)]
+#[derive(PartialEq, Eq, Hash, Clone, Debug)]
 pub struct Vertex<T>(pub T);
 
-impl<T> Vertex<T> 
-where 
+impl<T> Vertex<T>
+where
     T: Eq + Hash + Clone,
 {
     fn new(data: T) -> Self {
         Vertex(data)
     }
+
+    /// Returns a Set<Vertex<T>> of all adjacent vertices and edges 
+    fn adjacent(&self) -> Set<Vertex<T>> {
+        todo!("Implement adj()");
+    }
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct Set<T>(pub HashSet<T>);
 
 impl<T> Set<T>
-where 
+where
     T: Eq + Hash + Clone,
 {
     fn new() -> Self {
         Set(HashSet::new())
+    }
+
+    fn iter(&self) -> Iter<'_, T> {
+        let Set(h) = self;
+        h.iter()
     }
 
     fn insert(&mut self, data: T) {
@@ -122,7 +140,7 @@ where
 }
 
 impl<T> From<VertexSet<T>> for Set<T>
-where 
+where
     T: Eq + Hash + Clone,
 {
     fn from(vst: VertexSet<T>) -> Self {
@@ -142,8 +160,8 @@ where
 #[derive(PartialEq, Eq, Hash, Clone)]
 pub struct Edge<T>(pub Vertex<T>, pub Vertex<T>);
 
-impl<T> Edge<T> 
-where 
+impl<T> Edge<T>
+where
     T: Eq + Hash + Clone,
 {
     fn new(v1: Vertex<T>, v2: Vertex<T>) -> Self {
@@ -152,12 +170,11 @@ where
 }
 
 fn check_graph<T: Eq + Hash + Clone>(vertices: VertexSet<T>, edges: EdgeSet<T>) -> bool {
-
     if vertices.len() == 0 {
         return false;
     }
 
-    for (_, e) in edges.iter() {
+    for e in edges.iter() {
         let vertices_ = vertices.clone();
         let s: Set<T> = e.into();
         if s.len() > 2 {
@@ -182,11 +199,11 @@ pub mod tests {
         let v3 = Vertex::new(11);
         let v1_ = v1.clone();
         let v1__ = v1.clone();
-        let v2_ = v2.clone();        
+        let v2_ = v2.clone();
         let v2__ = v2.clone();
         let v3_ = v3.clone();
         let v3__ = v3.clone();
-        
+
         let e1 = Edge::new(v1, v2);
         let e2 = Edge::new(v2_, v3);
         let e3 = Edge::new(v3_, v1_);
@@ -202,5 +219,35 @@ pub mod tests {
 
         Ok(())
     }
-}
 
+    #[test]
+    fn test_graph_get() -> Result<(), String> {
+        let v1 = Vertex::new(33);
+        let v2 = Vertex::new(22);
+        let v3 = Vertex::new(11);
+        let v1_ = v1.clone();
+        let v1__ = v1.clone();
+        let v2_ = v2.clone();
+        let v2__ = v2.clone();
+        let v3_ = v3.clone();
+        let v3__ = v3.clone();
+
+        let e1 = Edge::new(v1, v2);
+        let e2 = Edge::new(v2_, v3);
+        let e3 = Edge::new(v3_, v1_);
+
+        let graph = GraphBuilder::<i32>::new()
+            .add_vertex(v1__)
+            .add_vertex(v2__)
+            .add_vertex(v3__)
+            .add_edge(e1)
+            .add_edge(e2)
+            .add_edge(e3)
+            .build()?;
+
+        let vertex = graph.get(33).unwrap();
+        assert_eq!(vertex, Vertex(33));
+
+        Ok(())
+    }
+}
