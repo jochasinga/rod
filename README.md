@@ -11,6 +11,25 @@ Because each language brings along its own way of thinking and weaknesses, I wan
 
 ### Definitions and Proofs
 
+## Develop
+[Rust](https://doc.rust-lang.org/book/ch01-01-installation.html) is required.
+
+```
+cargo install cargo-watch
+cargo watch -x 'run -- serve'
+```
+
+## Run on Heroku
+```
+heroku create --buildpack emk/rust
+git push heroku master
+```
+
+or:
+
+[![Deploy](assets/herokubutton.svg)](https://heroku.com/deploy?template=https://github.com/mmalmi/rod)
+
+## memo
 Any useful facts in nature are independent of what people think and do. For example, two graphs are isomorphic since the beginning of time, not because someone discovered it.This idea is manifested in the [Mathematician's Apology](https://en.wikipedia.org/wiki/A_Mathematician%27s_Apology).
 
 I believe implementations are easy and adaptable as long as there are sufficient discussions around the truth rather than the implementation ("I think library A is great for this, but B is also worth checking" kind of discussion which almost always lead to bikeshedding and end up not being productive). Therefore, I want to focus on pure mathematical definitions *when possible*. This can mean starting with a [trait that describe the desired behaviors and using heavy comments to document reasoning](./src/graph.rs).
@@ -19,6 +38,7 @@ Hopefully, this will lead to the kind of clarity that open doors to any develope
 
 ### Rust-first
 
+- 08/13/2021: Discuss basic structure of the project. Also downgrade the abstraction, avoiding uses of lifetime specifiers and traits where possible for maintainability and accessibility to non-rust users. Name change to rod.
 If a challenge arises that is torn between strictly implementing GUN and doing it right in Rust, we should favor the latter.
 
 ### Not re-inventing the wheels
