@@ -1,9 +1,9 @@
-# 💎 Rodium
+# rod
 
 Fresh implementation of [GUN Protocol](https://gun.eco/docs/javascript#graphs) Protocol based on graph theory.
 
 > ⚠️ This is an experimental project. It does not have any official affilation with [GunDB](https://github.com/amark/gun). I want this to be an implementation of Gun as a protocol while being open enough to address its own [challenges](#challenges).    
-If you're looking for the official Rust project, check out [Rod (Recursive Object Database)](https://github.com/eraeco/rod), which was started by [Mark](https://github.com/amark) after our discussions and will be focusing on JS developers' ergonomics. I intend to contribute to Rod too.
+If you're looking for the official Rust project, check out [Rod (Recursive Object Database)](https://github.com/eraeco/rod).
 
 ## challenges
 
@@ -40,6 +40,10 @@ Hopefully, this will lead to the kind of clarity that open doors to any develope
 
 - 08/13/2021: Discuss basic structure of the project. Also downgrade the abstraction, avoiding uses of lifetime specifiers and traits where possible for maintainability and accessibility to non-rust users. Name change to rod.
 If a challenge arises that is torn between strictly implementing GUN and doing it right in Rust, we should favor the latter.
+
+### Not re-inventing the wheels
+
+Nothing should be built in vacuum. All inventions are collections of ideas and other inventions put together and synthesizes into something much greater than the sum of their parts.
 
 ### TDD
 
