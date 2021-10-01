@@ -1,15 +1,20 @@
-use bincode;
 use core::fmt;
-use serde::{Deserialize, Serialize};
+use serde::Serialize;
 use std::collections::HashSet;
 use std::convert::TryFrom;
-use std::hash::{Hash, Hasher};
+use std::hash::Hash;
 use std::slice::Iter;
+
+mod set;
+mod vertex;
+
+use set::Set;
 /// Definition:
 /// A graph is an object consisting of two sets, a VertexSet<T> and an EdgeSet<T>.
 /// The edge set may be empty, but otherwise its elements are two-element
 /// subsets of the vertex set.
 use std::{cmp::PartialEq, iter::FromIterator};
+use vertex::Vertex;
 
 pub type VertexSet<T> = Set<Vertex<T>>;
 pub type EdgeSet<T> = Set<Edge<T>>;
@@ -160,20 +165,6 @@ where
     }
 }
 
-// A vertex set V is a finite non-empty set
-// V = {A, B, C, D}
-#[derive(Hash, Clone, Debug, Serialize, Default)]
-pub struct Vertex<T: Eq + Hash + Clone + Serialize + fmt::Debug>(pub T);
-
-impl<T> PartialEq for Vertex<T>
-where
-    T: Eq + PartialEq + Hash + Clone + Serialize + fmt::Debug,
-{
-    fn eq(&self, other: &Self) -> bool {
-        self.0 == other.0
-    }
-}
-
 impl<T> Eq for Vertex<T> where T: Eq + Hash + Clone + Serialize + fmt::Debug {}
 
 impl<T> Vertex<T>
@@ -193,101 +184,6 @@ where
     /// Returns a Set<Vertex<T>> of all adjacent vertices and edges
     fn adjc(&self) -> Option<&Graph<T>> {
         todo!("Implement adj() that returns a sub graph with only adjacent vertices");
-    }
-}
-
-/// Set<T> is the base set wrapping the HashSet primitive and
-/// providing certain set abstractions.
-/// WARNING: Casting Vertex<T> or Edge<T> to Set<T> are lossy
-/// meaning once the casting is done there is no way of differentiating
-/// a Set<T> if it was previously of type Vertex<T> or Edge<T>
-/// aside from its size. Therefore, this casting should be limited
-/// to just within the implementation of methods of Vertex<T> and Edge<T> only.
-///
-#[derive(Serialize, Deserialize, Clone, Debug, Default)]
-pub struct Set<T: Eq + Hash + fmt::Debug>(pub HashSet<T>);
-
-impl<T> Hash for Set<T>
-where
-    T: Eq + Hash + Serialize + fmt::Debug,
-{
-    fn hash<H: Hasher>(&self, state: &mut H) {
-        let encoded: Vec<u8> = bincode::serialize(&self).unwrap();
-        encoded.hash(state);
-    }
-}
-
-impl<T> PartialEq for Set<T>
-where
-    T: Eq + Hash + Clone + fmt::Debug,
-{
-    fn eq(&self, other: &Set<T>) -> bool {
-        let (Set(h1), Set(h2)) = (&self, other);
-        h1.difference(h2).count() == 0
-    }
-}
-
-impl<T> Eq for Set<T> where T: Eq + Hash + Clone + fmt::Debug {}
-
-impl<T> Set<T>
-where
-    T: Eq + Hash + Clone + fmt::Debug,
-{
-    fn new() -> Self {
-        Set(HashSet::new())
-    }
-
-    fn iter(&self) -> std::collections::hash_set::Iter<'_, T> {
-        let Set(h) = self;
-        h.iter()
-    }
-
-    fn insert(&mut self, data: T) {
-        let Set(inner) = self;
-        inner.insert(data);
-        let new_inner = inner.clone();
-        *self = Set(new_inner);
-    }
-
-    fn len(&self) -> usize {
-        let Set(hs) = self;
-        hs.len()
-    }
-
-    fn is_subset(&self, other: &Set<T>) -> bool {
-        let (Set(h1), Set(h2)) = (self, other);
-        h1.is_subset(h2)
-    }
-
-    fn intersection(&self, other: &Self) -> Self {
-        let intersection = self.0.intersection(&other.0);
-        let mut hs = HashSet::new();
-        for s in intersection.into_iter() {
-            let s_ = s.clone();
-            hs.insert(s_);
-        }
-        Set(hs)
-    }
-}
-
-impl<'a, T> IntoIterator for &'a Set<T>
-where
-    T: Eq + Hash + Clone + fmt::Debug,
-{
-    type Item = &'a T;
-    type IntoIter = std::collections::hash_set::Iter<'a, T>;
-    fn into_iter(self) -> std::collections::hash_set::Iter<'a, T> {
-        let Set(hs) = self;
-        hs.iter()
-    }
-}
-
-impl<T> From<HashSet<T>> for Set<T>
-where
-    T: Eq + Hash + Clone + Serialize + fmt::Debug,
-{
-    fn from(h: HashSet<T>) -> Self {
-        Set(h)
     }
 }
 
