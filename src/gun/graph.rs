@@ -101,7 +101,7 @@ where
         self
     }
 
-    fn link_adjacent_vertices(mut self) -> Result<Self, String> {
+    fn link_adjacent_vertices(self) -> Result<Self, String> {
         // Build a subgraph for every vertex and save it.
 
         let mut vs = Set::<Vertex<T>>::new();
@@ -109,7 +109,7 @@ where
 
         for v in self.vertices.into_iter() {
             for e in self.edges.into_iter() {
-                if e.is_incident(&v) {
+                if e.is_incident(v) {
                     vs.insert(v.clone());
                     es.insert(e.clone());
                 }
@@ -223,7 +223,7 @@ where
 {
     fn eq(&self, other: &Set<T>) -> bool {
         let (Set(h1), Set(h2)) = (&self, other);
-        h1.difference(&h2).count() == 0
+        h1.difference(h2).count() == 0
     }
 }
 
@@ -278,7 +278,7 @@ where
     type IntoIter = std::collections::hash_set::Iter<'a, T>;
     fn into_iter(self) -> std::collections::hash_set::Iter<'a, T> {
         let Set(hs) = self;
-        hs.into_iter()
+        hs.iter()
     }
 }
 
@@ -371,7 +371,7 @@ where
         } else {
             let mut iter = s.0.into_iter().take(1);
             match iter.next() {
-                Some(d) => Ok(Vertex(d.clone())),
+                Some(d) => Ok(Vertex(d)),
                 _ => Err("End of iter".to_string()),
             }
         }

@@ -152,7 +152,7 @@ async fn user_message(my_id: usize, msg: Message, users: &Users) {
     }
 }
 
-async fn user_message_item(my_id: usize, users: &Users, json: &Value, msg_str: &str) {
+async fn user_message_item(my_id: usize, users: &Users, json: &Value, _msg_str: &str) {
     // eprintln!("user {} sent request with id {}, get {} and put {}", my_id, json["#"], json["get"], json["put"]);
     if json["#"] == Value::Null || (json["get"] == Value::Null && json["put"] == Value::Null) {
         // eprintln!("user {} sent funny request {}", my_id, msg_str);
@@ -161,12 +161,11 @@ async fn user_message_item(my_id: usize, users: &Users, json: &Value, msg_str: &
 
     if json["get"] != Value::Null {
         match users.write().await.get_mut(&my_id) {
-            Some(user) => match json["get"]["#"].as_str() {
-                Some(path) => {
+            Some(user) => {
+                if let Some(path) = json["get"]["#"].as_str() {
                     user.subscriptions.insert(path.to_string());
                 }
-                _ => {}
-            },
+            }
             _ => {
                 return;
             }
