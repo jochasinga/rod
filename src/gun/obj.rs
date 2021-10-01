@@ -1,6 +1,6 @@
+use rand::Rng;
 use std::collections::HashMap;
 use std::convert::TryInto;
-use rand::Rng;
 
 #[derive(Debug, PartialEq, Clone)]
 pub struct Object(String, HashMap<String, Value>);
@@ -29,15 +29,15 @@ impl Object {
 
 /// Build an Object according to the Builder pattern
 /// Example:
-/// 
+///
 /// ```rust
-/// 
+///
 /// use rod::obj::ObjectBuilder;
 /// let obj = ObjectBuilder::new()
 ///     .with_id("foobar")
 ///     .create();
 /// assert!(obj.get_id() == "foobar".to_string());
-/// 
+///
 /// let obj2 = ObjectBuilder::new().create();
 /// assert!(obj2.get_id().len() == 32);
 /// ```

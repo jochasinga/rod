@@ -1,10 +1,9 @@
-/// Currently not in use!
-
-use std::convert::TryInto;
 use crate::dup::Dup;
-use crate::obj::{Object, Value};
 use crate::gun::gun::Gun;
-use crate::message::{Message, Key};
+use crate::message::{Key, Message};
+use crate::obj::{Object, Value};
+/// Currently not in use!
+use std::convert::TryInto;
 
 // Daisy-chain Ad-hoc Mesh-networking
 struct Dam;
@@ -23,10 +22,8 @@ impl Dam {
         let content_id = Key::ContentHash.to_string();
 
         // FIXME: Review this logic!
-        if let (Some(ack), Some(hash)) = 
-            (msg.get(ack_id.clone()), msg.get(content_id.clone()))
-            {
-                match (ack, hash) {
+        if let (Some(ack), Some(hash)) = (msg.get(ack_id.clone()), msg.get(content_id.clone())) {
+            match (ack, hash) {
                 (Value::Link(obj), Value::Text(hash_str)) => {
                     if Dup::check(&obj, hash_str.to_string()) {
                         return Ok(());
@@ -35,7 +32,7 @@ impl Dam {
                 _ => {}
             }
         }
-        
+
         let v = msg.get(message_id.clone()).unwrap();
         match v {
             Value::Text(s) => {
@@ -49,9 +46,7 @@ impl Dam {
         // We're not using this?
         let _near = msg.get(Key::Peers.to_string());
 
-
         gun.inbound(&msg);
-
 
         if let Some(id_val) = msg.get(message_id) {
             if let Ok(id_str) = id_val.try_into() {

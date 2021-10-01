@@ -7,7 +7,7 @@ impl Dup {
         obj.insert(key, value)
     }
 
-    pub fn check(_obj: & Object, _id: String) -> bool {
+    pub fn check(_obj: &Object, _id: String) -> bool {
         unimplemented!("dup::check")
     }
 

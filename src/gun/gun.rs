@@ -1,7 +1,7 @@
 use crate::obj::Object;
 
 pub struct Gun<'a> {
-    pub dups: &'a Object
+    pub dups: &'a Object,
 }
 
 impl<'a> Gun<'_> {

@@ -1,15 +1,15 @@
-use std::convert::{TryFrom};
+use bincode;
+use core::fmt;
+use serde::{Deserialize, Serialize};
+use std::collections::HashSet;
+use std::convert::TryFrom;
+use std::hash::{Hash, Hasher};
+use std::slice::Iter;
 /// Definition:
 /// A graph is an object consisting of two sets, a VertexSet<T> and an EdgeSet<T>.
 /// The edge set may be empty, but otherwise its elements are two-element
 /// subsets of the vertex set.
 use std::{cmp::PartialEq, iter::FromIterator};
-use std::collections::HashSet;
-use std::slice::Iter;
-use serde::{Serialize, Deserialize};
-use std::hash::{Hash, Hasher};
-use bincode;
-use core::fmt;
 
 pub type VertexSet<T> = Set<Vertex<T>>;
 pub type EdgeSet<T> = Set<Edge<T>>;
@@ -26,11 +26,10 @@ pub struct Graph<T: Eq + Hash + Clone + Serialize + fmt::Debug> {
 
 impl<T> PartialEq for Graph<T>
 where
-    T: Eq + Hash + Clone + Serialize + fmt::Debug, 
+    T: Eq + Hash + Clone + Serialize + fmt::Debug,
 {
     fn eq(&self, other: &Self) -> bool {
-        self.vertices == other.vertices 
-        && self.edges == other.edges
+        self.vertices == other.vertices && self.edges == other.edges
     }
 }
 
@@ -41,8 +40,8 @@ where
     T: Default + Eq + Hash + Clone + Serialize + fmt::Debug,
 {
     fn default() -> Self {
-        Graph { 
-            vertices: Set::new(), 
+        Graph {
+            vertices: Set::new(),
             edges: Set::new(),
         }
     }
@@ -53,13 +52,13 @@ struct GraphBuilder<T: Eq + Hash + Clone + Serialize + fmt::Debug> {
     edges: EdgeSet<T>,
 }
 
-impl<T> Default for GraphBuilder<T> 
+impl<T> Default for GraphBuilder<T>
 where
     T: Default + Eq + Hash + Clone + Serialize + fmt::Debug,
 {
     fn default() -> Self {
-        GraphBuilder { 
-            vertices: Set::new(), 
+        GraphBuilder {
+            vertices: Set::new(),
             edges: Set::new(),
         }
     }
@@ -116,7 +115,7 @@ where
                 }
             }
         }
-        
+
         Ok(self)
     }
 
@@ -124,11 +123,7 @@ where
         let vertices = self.vertices.clone();
         let edges = self.edges.clone();
         if Graph::is_graph(self.vertices, self.edges) {
-
-            Ok(Graph {
-                vertices, 
-                edges, 
-            })
+            Ok(Graph { vertices, edges })
         } else {
             Err("Not a graph".to_string())
         }
@@ -170,7 +165,7 @@ where
 #[derive(Hash, Clone, Debug, Serialize, Default)]
 pub struct Vertex<T: Eq + Hash + Clone + Serialize + fmt::Debug>(pub T);
 
-impl<T> PartialEq for Vertex<T> 
+impl<T> PartialEq for Vertex<T>
 where
     T: Eq + PartialEq + Hash + Clone + Serialize + fmt::Debug,
 {
@@ -179,9 +174,7 @@ where
     }
 }
 
-impl<T> Eq for Vertex<T> 
-where T: Eq + Hash + Clone + Serialize + fmt::Debug { }
-
+impl<T> Eq for Vertex<T> where T: Eq + Hash + Clone + Serialize + fmt::Debug {}
 
 impl<T> Vertex<T>
 where
@@ -197,12 +190,11 @@ where
         es.intersection(&vs) == vs
     }
 
-    /// Returns a Set<Vertex<T>> of all adjacent vertices and edges 
+    /// Returns a Set<Vertex<T>> of all adjacent vertices and edges
     fn adjc(&self) -> Option<&Graph<T>> {
         todo!("Implement adj() that returns a sub graph with only adjacent vertices");
     }
 }
-
 
 /// Set<T> is the base set wrapping the HashSet primitive and
 /// providing certain set abstractions.
@@ -215,7 +207,7 @@ where
 #[derive(Serialize, Deserialize, Clone, Debug, Default)]
 pub struct Set<T: Eq + Hash + fmt::Debug>(pub HashSet<T>);
 
-impl<T> Hash for Set<T> 
+impl<T> Hash for Set<T>
 where
     T: Eq + Hash + Serialize + fmt::Debug,
 {
@@ -225,8 +217,8 @@ where
     }
 }
 
-impl<T> PartialEq for Set<T> 
-where 
+impl<T> PartialEq for Set<T>
+where
     T: Eq + Hash + Clone + fmt::Debug,
 {
     fn eq(&self, other: &Set<T>) -> bool {
@@ -235,10 +227,7 @@ where
     }
 }
 
-impl<T> Eq for Set<T> 
-where 
-    T: Eq + Hash + Clone + fmt::Debug { }
-
+impl<T> Eq for Set<T> where T: Eq + Hash + Clone + fmt::Debug {}
 
 impl<T> Set<T>
 where
@@ -306,7 +295,7 @@ impl<'a, T> FromIterator<&'a Vertex<T>> for Set<Vertex<T>>
 where
     T: 'a + Eq + Hash + Clone + Serialize + fmt::Debug,
 {
-    fn from_iter<I: IntoIterator<Item=&'a Vertex<T>>>(iter: I) -> Self {
+    fn from_iter<I: IntoIterator<Item = &'a Vertex<T>>>(iter: I) -> Self {
         let mut hs = HashSet::new();
         for i in iter {
             let i_ = i.clone();
@@ -320,7 +309,7 @@ impl<'a, T> FromIterator<&'a Edge<T>> for Set<Edge<T>>
 where
     T: 'a + Eq + Hash + Clone + Serialize + fmt::Debug,
 {
-    fn from_iter<I: IntoIterator<Item=&'a Edge<T>>>(iter: I) -> Self {
+    fn from_iter<I: IntoIterator<Item = &'a Edge<T>>>(iter: I) -> Self {
         let mut hs = HashSet::new();
         for i in iter {
             let i_ = i.clone();
@@ -336,9 +325,9 @@ where
 {
     fn from(it: Iter<Edge<T>>) -> Self {
         let mut hs = HashSet::<Edge<T>>::new();
-        it.for_each(|e| { 
+        it.for_each(|e| {
             let e_ = e.clone();
-            hs.insert(e_); 
+            hs.insert(e_);
         });
         Set::from(hs)
     }
@@ -402,8 +391,8 @@ where
 }
 
 impl<T> From<&Vertex<T>> for Set<Vertex<T>>
-where 
-    T: Eq + Hash + Clone + Serialize + fmt::Debug, 
+where
+    T: Eq + Hash + Clone + Serialize + fmt::Debug,
 {
     fn from(v: &Vertex<T>) -> Self {
         let mut hs = HashSet::<Vertex<T>>::new();
@@ -450,7 +439,6 @@ where
     }
 }
 
-
 #[cfg(test)]
 pub mod tests {
 
@@ -476,11 +464,10 @@ pub mod tests {
         let e2 = Edge::new(v2_, v3);
         let e3 = Edge::new(v3_, v1_);
 
-
         let g = GraphBuilder::<i32>::new()
             .add_vertexset(Set::<Vertex<i32>>::from_iter(
-                vec![v1__, v2__, v3__, v4, v5, v6].iter())
-            )
+                vec![v1__, v2__, v3__, v4, v5, v6].iter(),
+            ))
             .add_edgeset(EdgeSet::from_iter(vec![e1, e2, e3].iter()))
             .build()?;
 

@@ -7,9 +7,9 @@ pub use crate::gun::*;
 mod tests {
 
     use super::*;
-    use obj::{Object, Value};
     use dup::Dup;
     use message::Key;
+    use obj::{Object, Value};
 
     #[test]
     fn test_dup() {

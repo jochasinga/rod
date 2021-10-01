@@ -1,10 +1,10 @@
 // #![deny(warnings)]
 use std::collections::{HashMap, HashSet};
+use std::env;
 use std::sync::{
     atomic::{AtomicUsize, Ordering},
     Arc,
 };
-use std::env;
 
 use futures::{SinkExt, StreamExt, TryFutureExt};
 use tokio::sync::{mpsc, RwLock};
@@ -19,11 +19,14 @@ static NEXT_USER_ID: AtomicUsize = AtomicUsize::new(1);
 
 struct User {
     sender: mpsc::UnboundedSender<Message>,
-    subscriptions: HashSet<String>
+    subscriptions: HashSet<String>,
 }
 impl User {
     fn new(sender: mpsc::UnboundedSender<Message>) -> User {
-        User { sender, subscriptions: HashSet::new() }
+        User {
+            sender,
+            subscriptions: HashSet::new(),
+        }
     }
 }
 
@@ -59,7 +62,7 @@ pub async fn serve() {
 
     let port: u16 = match env::var("PORT") {
         Ok(p) => p.parse::<u16>().unwrap(),
-        _ => 5000
+        _ => 5000,
     };
 
     eprintln!("Starting server at http://localhost:{}", port);
@@ -133,7 +136,9 @@ async fn user_message(my_id: usize, msg: Message, users: &Users) {
 
     let json: Value = match serde_json::from_str(msg_str) {
         Ok(json) => json,
-        Err(_) => { return; }
+        Err(_) => {
+            return;
+        }
     };
 
     if json.is_array() {
@@ -156,13 +161,15 @@ async fn user_message_item(my_id: usize, users: &Users, json: &Value, msg_str: &
 
     if json["get"] != Value::Null {
         match users.write().await.get_mut(&my_id) {
-            Some(user) => {
-                match json["get"]["#"].as_str() {
-                    Some(path) => { user.subscriptions.insert(path.to_string()); },
-                    _ => {}
+            Some(user) => match json["get"]["#"].as_str() {
+                Some(path) => {
+                    user.subscriptions.insert(path.to_string());
                 }
+                _ => {}
             },
-            _ => { return; }
+            _ => {
+                return;
+            }
         }
     }
 
@@ -186,7 +193,7 @@ async fn user_message_item(my_id: usize, users: &Users, json: &Value, msg_str: &
                     if !has {
                         continue;
                     }
-                },
+                }
                 _ => {}
             }
             let _ = user.sender.send(Message::text(json.to_string()));

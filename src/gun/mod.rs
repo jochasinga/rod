@@ -1,7 +1,7 @@
+pub mod adapters;
 pub mod dam;
-pub mod gun;
 pub mod dup;
+pub mod graph;
+pub mod gun;
 pub mod message;
 pub mod obj;
-pub mod graph;
-pub mod adapters;
