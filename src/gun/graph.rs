@@ -474,37 +474,5 @@ pub mod tests {
         println!("{:#?}", g);
         Ok(())
     }
-
-    /*
-    #[test]
-    fn test_graph_get() -> Result<(), String> {
-        let v1 = Vertex::new(33);
-        let v2 = Vertex::new(22);
-        let v3 = Vertex::new(11);
-        let v1_ = v1.clone();
-        let v1__ = v1.clone();
-        let v2_ = v2.clone();
-        let v2__ = v2.clone();
-        let v3_ = v3.clone();
-        let v3__ = v3.clone();
-
-        let e1 = Edge::new(v1, v2);
-        let e2 = Edge::new(v2_, v3);
-        let e3 = Edge::new(v3_, v1_);
-
-        let graph = GraphBuilder::<i32>::new()
-            .add_vertex(v1__)
-            .add_vertex(v2__)
-            .add_vertex(v3__)
-            .add_edge(e1)
-            .add_edge(e2)
-            .add_edge(e3)
-            .build()?;
-
-        let vertex = graph.get(33).unwrap();
-        assert_eq!(vertex, Vertex(33));
-
-        Ok(())
-    }
-    */
 }
+
