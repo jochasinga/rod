@@ -84,39 +84,39 @@ where
     }
 }
 
-#[cfg(test)]
-pub mod tests {
+// #[cfg(test)]
+// pub mod tests {
 
-    use super::*;
+//     use super::*;
 
-    #[test]
-    fn test_graph() -> Result<(), String> {
-        let v1 = Vertex::new(33);
-        let v2 = Vertex::new(22);
-        let v3 = Vertex::new(11);
-        let v1_ = v1.clone();
-        let v1__ = v1.clone();
-        let v2_ = v2.clone();
-        let v2__ = v2.clone();
-        let v3_ = v3.clone();
-        let v3__ = v3.clone();
+//     #[test]
+//     fn test_graph() -> Result<(), String> {
+//         let v1 = Vertex::new(33);
+//         let v2 = Vertex::new(22);
+//         let v3 = Vertex::new(11);
+//         let v1_ = v1.clone();
+//         let v1__ = v1.clone();
+//         let v2_ = v2.clone();
+//         let v2__ = v2.clone();
+//         let v3_ = v3.clone();
+//         let v3__ = v3.clone();
 
-        let v4 = Vertex::new(44);
-        let v5 = Vertex::new(55);
-        let v6 = Vertex::new(55);
+//         let v4 = Vertex::new(44);
+//         let v5 = Vertex::new(55);
+//         let v6 = Vertex::new(55);
 
-        let e1 = Edge::new(v1, v2);
-        let e2 = Edge::new(v2_, v3);
-        let e3 = Edge::new(v3_, v1_);
+//         let e1 = Edge::new(v1, v2);
+//         let e2 = Edge::new(v2_, v3);
+//         let e3 = Edge::new(v3_, v1_);
 
-        let g = GraphBuilder::<i32>::new()
-            .add_vertexset(VertexSet::<i32>::from_iter(
-                vec![v1__, v2__, v3__, v4, v5, v6].iter(),
-            ))
-            .add_edgeset(EdgeSet::from_iter(vec![e1, e2, e3].iter()))
-            .build()?;
+//         let g = GraphBuilder::<i32>::new()
+//             .add_vertexset(VertexSet::<i32>::from_iter(
+//                 vec![v1__, v2__, v3__, v4, v5, v6].iter(),
+//             ))
+//             .add_edgeset(EdgeSet::from_iter(vec![e1, e2, e3].iter()))
+//             .build()?;
 
-        println!("{:#?}", g);
-        Ok(())
-    }
-}
+//         println!("{:#?}", g);
+//         Ok(())
+//     }
+// }
