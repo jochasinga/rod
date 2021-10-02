@@ -99,3 +99,45 @@ where
         Set(h)
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    #[test]
+    fn new_set_is_empty() {
+        let numbers = Set::<u8>::new();
+
+        assert_eq!(numbers.len(), 0);
+    }
+
+    #[test]
+    fn set_lenght_increasing_when_inserted() {
+        let mut numbers = Set::<u8>::new();
+
+        assert_eq!(numbers.len(), 0);
+        numbers.insert(1u8);
+        assert_eq!(numbers.len(), 1);
+    }
+
+    #[test]
+    fn set_lenght_not_increasing_when_reinserted() {
+        let mut numbers = Set::<u8>::new();
+
+        numbers.insert(1u8);
+        assert_eq!(numbers.len(), 1);
+
+        numbers.insert(1u8);
+        assert_eq!(numbers.len(), 1);
+    }
+
+    #[test]
+    fn set_lenght_increasing_when_different_elements_inserted() {
+        let mut numbers = Set::<u8>::new();
+
+        numbers.insert(1u8);
+        assert_eq!(numbers.len(), 1);
+
+        numbers.insert(2u8);
+        assert_eq!(numbers.len(), 2);
+    }
+}
