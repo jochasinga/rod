@@ -1,7 +1,6 @@
 use core::fmt;
 use serde::Serialize;
 use std::collections::HashSet;
-use std::convert::TryFrom;
 use std::hash::Hash;
 use std::slice::Iter;
 
@@ -165,28 +164,6 @@ where
     }
 }
 
-impl<T> Eq for Vertex<T> where T: Eq + Hash + Clone + Serialize + fmt::Debug {}
-
-impl<T> Vertex<T>
-where
-    T: Eq + Hash + Clone + Serialize + fmt::Debug,
-{
-    fn new(data: T) -> Self {
-        Vertex(data)
-    }
-
-    fn is_incident(&self, e: &Edge<T>) -> bool {
-        let vs: Set<T> = self.into();
-        let es: Set<T> = e.into();
-        es.intersection(&vs) == vs
-    }
-
-    /// Returns a Set<Vertex<T>> of all adjacent vertices and edges
-    fn adjc(&self) -> Option<&Graph<T>> {
-        todo!("Implement adj() that returns a sub graph with only adjacent vertices");
-    }
-}
-
 impl<'a, T> FromIterator<&'a Vertex<T>> for Set<Vertex<T>>
 where
     T: 'a + Eq + Hash + Clone + Serialize + fmt::Debug,
@@ -255,65 +232,6 @@ where
     }
 }
 
-impl<T> TryFrom<Set<T>> for Vertex<T>
-where
-    T: Eq + Hash + Clone + Serialize + fmt::Debug,
-{
-    type Error = String;
-
-    fn try_from(s: Set<T>) -> Result<Self, Self::Error> {
-        if s.len() != 1 {
-            Err("Set<T> must have size of 1 or less".to_string())
-        } else {
-            let mut iter = s.0.into_iter().take(1);
-            match iter.next() {
-                Some(d) => Ok(Vertex(d)),
-                _ => Err("End of iter".to_string()),
-            }
-        }
-    }
-}
-
-impl<T> From<&Vertex<T>> for Set<T>
-where
-    T: Eq + Hash + Clone + Serialize + fmt::Debug,
-{
-    fn from(v: &Vertex<T>) -> Self {
-        let mut hs = HashSet::<T>::new();
-        let Vertex(d) = v.clone();
-        hs.insert(d);
-        Set(hs)
-    }
-}
-
-impl<T> From<&Vertex<T>> for Set<Vertex<T>>
-where
-    T: Eq + Hash + Clone + Serialize + fmt::Debug,
-{
-    fn from(v: &Vertex<T>) -> Self {
-        let mut hs = HashSet::<Vertex<T>>::new();
-        let v_ = v.clone();
-        hs.insert(v_);
-        Set(hs)
-    }
-}
-
-impl<T> From<VertexSet<T>> for Set<T>
-where
-    T: Eq + Hash + Clone + Serialize + fmt::Debug,
-{
-    fn from(vst: VertexSet<T>) -> Self {
-        let Set(vs) = vst;
-        let mut hs = HashSet::<T>::new();
-        for v in vs.iter() {
-            let Vertex(t) = v;
-            let t_ = t.clone();
-            hs.insert(t_);
-        }
-        Set(hs)
-    }
-}
-
 /// An edge connects {A, B} where A and B are elements of a set of vertices V.
 /// {A, B} ⊆ V where A ∈ V & B ∈ V
 #[derive(PartialEq, Eq, Hash, Clone, Debug, Default, Serialize)]
@@ -328,10 +246,8 @@ where
     }
 
     fn is_incident(&self, v: &Vertex<T>) -> bool {
-        // let Edge(v1, v2) = self;
-        let es: Set<T> = self.into();
-        let vs: Set<T> = v.into();
-        es.intersection(&vs) == vs
+        let Edge(v1, v2) = self;
+        v1.eq(&v) || v2.eq(&v)
     }
 }
 
