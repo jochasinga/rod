@@ -3,6 +3,7 @@ use serde::Serialize;
 use std::collections::HashSet;
 use std::convert::TryFrom;
 use std::hash::Hash;
+use std::{cmp::PartialEq, iter::FromIterator};
 
 use super::set::Set;
 use super::Edge;
@@ -90,7 +91,7 @@ where
         Vertex(data)
     }
 
-    fn is_incident(&self, e: &Edge<T>) -> bool {
+    pub fn is_incident(&self, e: &Edge<T>) -> bool {
         let vs: Set<T> = self.into();
         let es: Set<T> = e.into();
         es.intersection(&vs) == vs
@@ -99,6 +100,20 @@ where
     /// Returns a Set<Vertex<T>> of all adjacent vertices and edges
     fn adjc(&self) -> Option<&Graph<T>> {
         todo!("Implement adj() that returns a sub graph with only adjacent vertices");
+    }
+}
+
+impl<'a, T> FromIterator<&'a Vertex<T>> for Set<Vertex<T>>
+where
+    T: 'a + Eq + Hash + Clone + Serialize + fmt::Debug,
+{
+    fn from_iter<I: IntoIterator<Item = &'a Vertex<T>>>(iter: I) -> Self {
+        let mut hs = HashSet::new();
+        for i in iter {
+            let i_ = i.clone();
+            hs.insert(i_);
+        }
+        Set(hs)
     }
 }
 
