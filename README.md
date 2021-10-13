@@ -51,6 +51,6 @@ I want to encourage TDD approach on the implemention side when possible. If we c
 
 ## Where to start
 
-Check out [`graph.rs`](./src/graph.rs) to start with the definition of a graph, edge, and vertex. It might be helpful to check out [GUN's graph documentation](https://gun.eco/docs/javascript#graphs).
+Check out [`graph.rs`](https://github.com/jochasinga/rod/blob/master/src/gun/graph.rs) to start with the definition of a graph, edge, and vertex. It might be helpful to check out [GUN's graph documentation](https://gun.eco/docs/javascript#graphs).
 
 > ⚠️ At this point, most of the work will be in the form of discussions and proofs.
