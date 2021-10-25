@@ -14,7 +14,7 @@ use core::fmt;
 pub type VertexSet<T> = Set<Vertex<T>>;
 pub type EdgeSet<T> = Set<Edge<T>>;
 
-trait Isomorphic: PartialEq + Eq {
+pub trait Isomorphic: PartialEq + Eq {
     fn is(&self, other: impl Isomorphic) -> bool;
 }
 
@@ -48,7 +48,7 @@ where
     }
 }
 
-struct GraphBuilder<T: Eq + Hash + Clone + Serialize + fmt::Debug> {
+pub struct GraphBuilder<T: Eq + Hash + Clone + Serialize + fmt::Debug> {
     vertices: VertexSet<T>,
     edges: EdgeSet<T>,
 }
@@ -76,17 +76,17 @@ where
         }
     }
 
-    fn add_vertex(mut self, v: Vertex<T>) -> Self {
+    pub fn add_vertex(mut self, v: Vertex<T>) -> Self {
         self.vertices.insert(v);
         self
     }
 
-    fn add_edge(mut self, e: Edge<T>) -> Self {
+    pub fn add_edge(mut self, e: Edge<T>) -> Self {
         self.edges.insert(e);
         self
     }
 
-    fn add_vertexset(mut self, vs: VertexSet<T>) -> Self {
+    pub fn add_vertexset(mut self, vs: VertexSet<T>) -> Self {
         vs.into_iter().for_each(|v| {
             let v_ = v.clone();
             self.vertices.insert(v_);
@@ -94,7 +94,7 @@ where
         self
     }
 
-    fn add_edgeset(mut self, es: EdgeSet<T>) -> Self {
+    pub fn add_edgeset(mut self, es: EdgeSet<T>) -> Self {
         es.into_iter().for_each(|e| {
             let e_ = e.clone();
             self.edges.insert(e_);
@@ -102,7 +102,7 @@ where
         self
     }
 
-    fn link_adjacent_vertices(mut self) -> Result<Self, String> {
+    pub fn link_adjacent_vertices(self) -> Result<Self, String> {
         // Build a subgraph for every vertex and save it.
 
         let mut vs = Set::<Vertex<T>>::new();
@@ -120,7 +120,7 @@ where
         Ok(self)
     }
 
-    fn build(self) -> Result<Graph<T>, String> {
+    pub fn build(self) -> Result<Graph<T>, String> {
         let vertices = self.vertices.clone();
         let edges = self.edges.clone();
         if Graph::is_graph(self.vertices, self.edges) {
@@ -139,14 +139,14 @@ impl<T> Graph<T>
 where
     T: Eq + Hash + Clone + Serialize + fmt::Debug,
 {
-    fn new() -> Self {
+    pub fn new() -> Self {
         Graph {
             vertices: Set::new(),
             edges: Set::new(),
         }
     }
 
-    fn is_graph(vertices: VertexSet<T>, edges: EdgeSet<T>) -> bool {
+    pub fn is_graph(vertices: VertexSet<T>, edges: EdgeSet<T>) -> bool {
         if vertices.len() == 0 {
             return false;
         }
@@ -187,18 +187,18 @@ impl<T> Vertex<T>
 where
     T: Eq + Hash + Clone + Serialize + fmt::Debug,
 {
-    fn new(data: T) -> Self {
+    pub fn new(data: T) -> Self {
         Vertex(data)
     }
 
-    fn is_incident(&self, e: &Edge<T>) -> bool {
+    pub fn is_incident(&self, e: &Edge<T>) -> bool {
         let vs: Set<T> = self.into();
         let es: Set<T> = e.into();
         es.intersection(&vs) == vs
     }
 
     /// Returns a Set<Vertex<T>> of all adjacent vertices and edges 
-    fn adjc(&self) -> Option<&Graph<T>> {
+    pub fn adjc(&self) -> Option<&Graph<T>> {
         todo!("Implement adj() that returns a sub graph with only adjacent vertices");
     }
 }
@@ -244,33 +244,33 @@ impl<T> Set<T>
 where
     T: Eq + Hash + Clone + fmt::Debug,
 {
-    fn new() -> Self {
+    pub fn new() -> Self {
         Set(HashSet::new())
     }
 
-    fn iter(&self) -> std::collections::hash_set::Iter<'_, T> {
+    pub fn iter(&self) -> std::collections::hash_set::Iter<'_, T> {
         let Set(h) = self;
         h.iter()
     }
 
-    fn insert(&mut self, data: T) {
+    pub fn insert(&mut self, data: T) {
         let Set(inner) = self;
         inner.insert(data);
         let new_inner = inner.clone();
         *self = Set(new_inner);
     }
 
-    fn len(&self) -> usize {
+    pub fn len(&self) -> usize {
         let Set(hs) = self;
         hs.len()
     }
 
-    fn is_subset(&self, other: &Set<T>) -> bool {
+    pub fn is_subset(&self, other: &Set<T>) -> bool {
         let (Set(h1), Set(h2)) = (self, other);
         h1.is_subset(h2)
     }
 
-    fn intersection(&self, other: &Self) -> Self {
+    pub fn intersection(&self, other: &Self) -> Self {
         let intersection = self.0.intersection(&other.0);
         let mut hs = HashSet::new();
         for s in intersection.into_iter() {
@@ -438,11 +438,11 @@ impl<T> Edge<T>
 where
     T: Eq + Hash + Clone + Serialize + fmt::Debug,
 {
-    fn new(v1: Vertex<T>, v2: Vertex<T>) -> Self {
+    pub fn new(v1: Vertex<T>, v2: Vertex<T>) -> Self {
         Edge(v1, v2)
     }
 
-    fn is_incident(&self, v: &Vertex<T>) -> bool {
+    pub fn is_incident(&self, v: &Vertex<T>) -> bool {
         // let Edge(v1, v2) = self;
         let es: Set<T> = self.into();
         let vs: Set<T> = v.into();
